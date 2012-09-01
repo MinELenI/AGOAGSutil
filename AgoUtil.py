@@ -30,9 +30,11 @@ def deleteservice(server,service,username,password,id_group,token=None):
         token = gentoken(token_url,username,password)
     print("token = " + token)
     #request data van de gehele kerngroep-group
-    url_gr = "https://{}/sharing/rest/content/groups/{}?token={}&f=pjson".format(server, id_group, token)
+    #https://www.arcgis.com/sharing/rest/content/users/GCC_eli
+    url_gr = "https://{}/sharing/rest/content/users/{}?token={}&f=pjson".format(server, username, token)
     print url_gr
     json_gr = json.loads(urllib2.urlopen(url_gr).read())["items"]
+    print str(len(json_gr))
     for i in range(len(json_gr)):
         if str(json_gr[i]["name"]) == service:
             id_item = json_gr[i]["id"]
@@ -60,6 +62,8 @@ def publishMxdToAgo(mapDoc,serviceNaam,summary,tags,id_group,username,password):
             os.remove(sddraftBackup)
     if arcpy.Exists(sddraft):
        shutil.copyfile(sddraft, sddraftBackup)
+    if arcpy.Exists(sddraft):
+            os.remove(sddraft)
 
     # Create service definition draft
     arcpy.mapping.CreateMapSDDraft(mapDoc, sddraft, serviceNaam,'MY_HOSTED_SERVICES', None, True, None, summary, tags)
@@ -69,7 +73,7 @@ def publishMxdToAgo(mapDoc,serviceNaam,summary,tags,id_group,username,password):
 
     # stage and upload the service if the sddraft analysis did not contain errors
     if analysis['errors'] == {}:
-        #delete existing sddraft
+        #delete existing sd
         if arcpy.Exists(sd):
             os.remove(sd)
         # create service definition
