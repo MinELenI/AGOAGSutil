@@ -20,7 +20,9 @@ def main():
     id_group = "**"
     username = "***"
     password = "**"
-    AgoUtil.publishMxdToAgo(mapDoc,serviceNaam,summary,tags,id_group,username,password)
+	server = "www.arcgis.com"
+	
+    AgoUtil.publishMxdToAgo(mapDoc,serviceNaam,summary,tags,id_group,username,password,server)
 
 #run main def
 if __name__ == '__main__':
