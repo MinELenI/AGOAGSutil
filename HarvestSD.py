@@ -7,11 +7,40 @@
 # Copyright:   (c) wubbels 2012
 # Version:     Python 2.7
 #-------------------------------------------------------------------------------
-
+import os
 import AgoUtil
 import urllib2
 import webbrowser
 import getpass
+import urlparse
+import shutil
+
+# From: http://stackoverflow.com/questions/862173/how-to-download-a-file-using-python-in-a-smarter-way
+def download(url, folder=None,fileName=None):
+    def getFileName(url,openUrl):
+        if 'Content-Disposition' in openUrl.info():
+            # If the response has Content-Disposition, try to get filename from it
+            cd = dict(map(
+                lambda x: x.strip().split('=') if '=' in x else (x.strip(),''),
+                openUrl.info()['Content-Disposition'].split(';')))
+            if 'filename' in cd:
+                filename = cd['filename'].strip("\"'")
+                filename = filename.replace('"', '').replace("'", "")
+                if filename == '':
+                    filename = "dummy.sd"
+                if filename: return filename
+        # if no filename was found above, parse it out of the final URL.
+        return os.path.basename(urlparse.urlsplit(openUrl.url)[2])
+
+    r = urllib2.urlopen(urllib2.Request(url))
+    try:
+        fileName = fileName or getFileName(url,r)
+        if folder:
+            fileName = os.path.join(folder, fileName)
+        with open(fileName, 'wb') as f:
+            shutil.copyfileobj(r,f)
+    finally:
+        r.close()
 
 def def_prompt(msg):
     prompt = msg
@@ -29,6 +58,8 @@ def main():
     server = "www.arcgis.com"
     username = def_prompt("Username: ")
     password = getpass.getpass("Password: ")
+    downloadFolder = def_prompt("Download folder: ")
+    downloadFolder = r"/Users/maartentromp/Documents/Temp"
     id_portal = "kE0BiyvJHb5SwQv7"
 
     # request token from AGO
@@ -55,7 +86,7 @@ def main():
         myItems_lst = AgoUtil.requestitems(server,user,token,item_type)
         for item in myItems_lst:
             url = "https://{}/sharing/content/items/{}/data?token={}".format(server,item,token)
-            webbrowser.open(url)
+            download(url, downloadFolder)
 
     print "Ready"
 
