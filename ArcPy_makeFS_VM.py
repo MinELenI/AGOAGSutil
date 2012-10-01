@@ -21,8 +21,13 @@ def main():
 	username = "***"
 	password = "**"
 	server = "www.arcgis.com"
-	
-	AgsUtil.publishMxdToAgo(mapDoc,serviceNaam,summary,tags,id_group,username,password,server)
+	#Create SD file from MXD
+	sd = AgsUtil.createSdFromMxd(mapDoc, serviceNaam, summary, tags)
+	#Publish if successfull
+	if sd:
+		AgsUtil.publishSdToAgoArpPy(serviceNaam, id_group, username, password, server)
+	else:
+		print "servicefile could not be generated from " + mapDoc
 
 #run main def
 if __name__ == '__main__':

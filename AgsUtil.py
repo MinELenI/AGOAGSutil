@@ -17,14 +17,24 @@ import urllib
 import urllib2
 import json
 
-def publishMxdToAgo(mapDoc, serviceNaam, summary, tags, id_group, username, password, server, token=None):
+def publishSdToAgoArpPy(serviceNaam, id_group, username, password, server, token=None):
 	if token is None:
-		token = gentoken(server, username, password, expiration=60)
+		token = AgoUtil.gentoken(server, username, password, expiration=60)
+	#probeer de service op AGO te deleten
+	AgoUtil.deleteservice(server, serviceNaam, username, id_group, token)
+	# if required, sign in to My Hosted Services
+	arcpy.SignInToPortal_server(username, password, server)
+	# publish to My Hosted Services
+	arcpy.UploadServiceDefinition_server(sd, 'My Hosted Services')
+
+	pass
+
+def createSdFromMxd(mapDoc, serviceNaam, summary, tags):
 	wrkspc = os.path.dirname(mapDoc)
 	# define local variables
-	sddraftBackup = wrkspc + "\\" + "{}.sddraft_backup".format(serviceNaam)
-	sddraft = wrkspc + "\\" + "{}.sddraft".format(serviceNaam)
-	sd = wrkspc + "\\" + "{}.sd".format(serviceNaam)
+	sddraftBackup = os.path.join(wrkspc, "{}.sddraft_backup".format(serviceNaam))
+	sddraft = os.path.join(wrkspc, "{}.sddraft".format(serviceNaam))
+	sd = os.path.join(wrkspc, "{}.sd".format(serviceNaam))
 
 	# copy BasisDraft naar een nieuw bestand
 	if arcpy.Exists(sddraftBackup):
@@ -47,12 +57,6 @@ def publishMxdToAgo(mapDoc, serviceNaam, summary, tags, id_group, username, pass
 			os.remove(sd)
 		# create service definition
 		arcpy.StageService_server(sddraft, sd)
-		#probeer de service op AGO te deleten
-		deleteservice(server, serviceNaam, username, id_group, token)
-		# if required, sign in to My Hosted Services
-		arcpy.SignInToPortal_server(username, password, server)
-		# publish to My Hosted Services
-		arcpy.UploadServiceDefinition_server(sd, 'My Hosted Services')
 	else:
 		# Print errors, warnings, and messages returned from the analysis
 		print "The following information was returned during analysis of the MXD:"
@@ -65,5 +69,5 @@ def publishMxdToAgo(mapDoc, serviceNaam, summary, tags, id_group, username, pass
 			for layer in layerlist:
 				print layer.name,
 			print
-
-	pass
+			sd = None
+	return sd		

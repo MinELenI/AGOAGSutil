@@ -37,7 +37,7 @@ def download(url, folder=None,fileName=None):
         fileName = fileName or getFileName(url,r)
         if folder:
             fileName = os.path.join(folder, fileName)
-        with open(fileName, 'wb') as f:
+        with open(fileName, 'w') as f:
             shutil.copyfileobj(r,f)
     finally:
         r.close()
@@ -53,7 +53,6 @@ def def_prompt(msg):
             return ans
 
 def main():
-
     # define local variables
     server = "www.arcgis.com"
     username = def_prompt("Username: ")
@@ -86,7 +85,11 @@ def main():
         myItems_lst = AgoUtil.requestitems(server,user,token,item_type)
         for item in myItems_lst:
             url = "https://{}/sharing/content/items/{}/data?token={}".format(server,item,token)
-            download(url, downloadFolder)
+            print item + " wordt verwerkt.."
+            try:
+                download(url, downloadFolder)
+            except:
+                print "downloading " + url + " failed"
 
     print "Ready"
 
